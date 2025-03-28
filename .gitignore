@@ -7,6 +7,8 @@ venv/
 env/
 ENV/
 repositories/
+data/
+.pytest_cache
 # Dependency directories
 *.egg-info/
 dist/
