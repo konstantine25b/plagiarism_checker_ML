@@ -1,0 +1,23 @@
+# Core dependencies
+fastapi==0.103.1
+uvicorn==0.23.2
+python-dotenv==1.0.0
+
+# GitHub and code processing
+gitpython==3.1.32
+requests==2.31.0
+
+# Vector database and embeddings
+chromadb==0.4.15
+sentence-transformers==2.2.2
+torch==2.0.1
+
+# LLM integration (choose one)
+openai==0.28.0
+# OR anthropic==0.3.11
+
+# Additional utilities
+tqdm==4.66.1  # Progress bars
+loguru==0.7.0  # Better logging
+numpy==1.26.0  # Numerical operations
+pydantic==2.3.0  # Data validation

@@ -6,12 +6,11 @@ class Settings:
     GITHUB_API_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
     
     REPOSITORIES: List[str] = [
-        "https://github.com/python/cpython",
-        "https://github.com/django/django",
-        "https://github.com/pallets/flask",
-        "https://github.com/pwncollege/ctf-archive",
-        "https://github.com/spring-projects/spring-boot",
-        "https://github.com/protocolbuffers/protobuf",
+        "https://github.com/konstantine25b/Backend-Of-Plants-Ecommerce-Website",
+        "https://github.com/konstantine25b/realtime-auth-signin-tracker-frontend",
+        "https://github.com/langgenius/dify",
+        "https://github.com/NirDiamant/GenAI_Agents",
+        "https://github.com/shadps4-emu/shadPS4",
     ]
     
     # File filtering
