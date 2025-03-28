@@ -1,0 +1,47 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Dependency directories
+*.egg-info/
+dist/
+build/
+
+# IDE or editor-specific files
+.vscode/
+.idea/
+
+# Docker
+docker-compose.override.yml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Pytest
+.cache/
+
+# Log files
+*.log
+
+# Coverage reports
+.coverage
+*.coveragerc
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# Configurations for common services
+.env
+*.sqlite3
+
+# PyCharm
+.idea/
+
+# Vim
+*.swp
