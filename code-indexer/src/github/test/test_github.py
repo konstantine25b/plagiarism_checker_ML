@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from src.github.repo_getter import RepoGetter
-from src.github.file_finder import FileFinder
+from src.github.code_finder import CodeFinder
 from config.settings import settings
 
 def test_github_cloning():
@@ -25,54 +25,50 @@ def test_github_cloning():
     
     return cloned_paths
 
-def test_file_finding(cloned_paths):
-    print("\n=== Testing Code File Discovery ===")
+def test_code_finding():
+    print("\n=== Testing Code File Finding ===")
     
-    finder = FileFinder(repos_dir=settings.REPOS_ROOT)
-    total_files = 0
+    finder = CodeFinder()
+    code_files = finder.find_all_code_files()
     
-    for repo_path in cloned_paths:
-        if not repo_path:
-            continue
-            
-        repo_name = os.path.basename(repo_path)
-        print(f"\nFinding code files in {repo_name}...")
-        
-        code_files = finder.find_code_files(repo_name)
-        print(f"Found {len(code_files)} code files")
-        
-        # Show first 5 files as sample
-        for file in code_files[:5]:
-            print(f"  - {file['name']} ({file['path']})")
-        
-        total_files += len(code_files)
+    print(f"\nFound {len(code_files)} code files matching criteria:")
+    print(f"Extensions: {settings.CODE_EXTENSIONS}")
+    print(f"Max size: {settings.MAX_FILE_SIZE} bytes")
+    print(f"Ignored dirs: {settings.IGNORE_DIRS}")
     
-    print(f"\nTotal code files found across all repos: {total_files}")
+    # Print summary by repository
+    repos = {}
+    for file in code_files:
+        repos.setdefault(file['repo_name'], []).append(file)
+    
+    for repo_name, files in repos.items():
+        print(f"\nRepository: {repo_name}")
+        print(f"Files found: {len(files)}")
+        print("Sample files:")
+        for file in files[:3]:  # Show first 3 files per repo
+            print(f"  - {file['relative_path']} ({file['size_bytes']} bytes)")
+    
+    return code_files
 
-def test_file_reading(cloned_paths):
+def test_file_reading(code_files):
     print("\n=== Testing File Content Reading ===")
     
-    finder = FileFinder(repos_dir=settings.REPOS_ROOT)
+    finder = CodeFinder()
+    test_files = [f for f in code_files if f['extension'] == '.py'][:3]  # Test 3 Python files
     
-    for repo_path in cloned_paths[:2]:  # Test first 2 repos only
-        if not repo_path:
-            continue
-            
-        repo_name = os.path.basename(repo_path)
-        code_files = finder.find_code_files(repo_name)[:3]  # Test first 3 files
-        
-        print(f"\nReading files from {repo_name}:")
-        for file in code_files:
-            content = finder.read_file(file['path'])
-            if content:
-                print(f"  - {file['name']}: {len(content)} chars")
-            else:
-                print(f"  - {file['name']}: ❌ Could not read")
+    for file in test_files:
+        content = finder.read_file_safely(file['file_path'])
+        if content:
+            print(f"\nFile: {file['relative_path']}")
+            print(f"Size: {file['size_bytes']} bytes")
+            print(f"First line: {content.splitlines()[0][:100]}...")
+        else:
+            print(f"\nCould not read file: {file['file_path']}")
 
 if __name__ == "__main__":
     # Run all tests
-    cloned = test_github_cloning()
-    test_file_finding(cloned)
-    test_file_reading(cloned)
+    cloned_paths = test_github_cloning()
+    found_files = test_code_finding()
+    test_file_reading(found_files)
     
     print("\n=== GitHub Module Test Complete ===")
