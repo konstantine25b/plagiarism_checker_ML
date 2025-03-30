@@ -5,6 +5,9 @@ from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 import logging
 import openai  # Import openai here
+import json
+import csv
+from typing import Optional
 
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -25,6 +28,12 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+CHECK_RESULTS = []
+CHECK_RESULTS_CSV_FILENAME = "plagiarism_check_results.csv"
+
+def pretty_json(data):
+    return json.dumps(data, indent=4)
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     return """
@@ -37,6 +46,7 @@ async def root():
             <form method="post" action="/check_plagiarism_full/">
                 <label for="code">Code to Check:</label><br>
                 <textarea id="code" name="code" rows="10" cols="80"></textarea><br>
+                <input type="hidden" name="check_type" value="Full System">
                 <input type="submit" value="Check Plagiarism (Full System)">
             </form>
             <hr>
@@ -46,6 +56,7 @@ async def root():
                 <textarea id="code_rag" name="code" rows="10" cols="80"></textarea><br>
                 <label for="threshold_rag">Similarity Threshold (0.0 - 1.0):</label>
                 <input type="number" id="threshold_rag" name="threshold" min="0.0" max="1.0" step="0.01" value="0.8"><br>
+                <input type="hidden" name="check_type" value="RAG Only">
                 <input type="submit" value="Check Plagiarism (RAG Only)">
             </form>
             <hr>
@@ -53,14 +64,19 @@ async def root():
             <form method="post" action="/check_plagiarism_llm_only/">
                 <label for="code_llm">Code to Check:</label><br>
                 <textarea id="code_llm" name="code" rows="10" cols="80"></textarea><br>
+                <input type="hidden" name="check_type" value="LLM Only">
                 <input type="submit" value="Check Plagiarism (LLM Only)">
+            </form>
+            <hr>
+            <form method="post" action="/save_check_results/">
+                <input type="submit" value="Save Plagiarism Check Results to CSV">
             </form>
         </body>
     </html>
     """
 
 @app.post("/check_plagiarism_rag_only/")
-async def check_plagiarism_rag_only(code: str = Form(...), threshold: float = Form(0.8)):
+async def check_plagiarism_rag_only(code: str = Form(...), threshold: float = Form(0.8), check_type: str = Form("RAG Only")):
     logging.info(f"Received request for RAG-only plagiarism check with code: {code[:50]}...")
     try:
         embedding = plagiarism_checker.embedder.embed([code])[0].tolist()
@@ -77,18 +93,26 @@ async def check_plagiarism_rag_only(code: str = Form(...), threshold: float = Fo
                     similar_codes.append({"file_path": file_path, "code": code_snippet, "similarity": similarity})
                     max_similarity = max(max_similarity, similarity)
 
+        plagiarism_result = "Not plagiarized (RAG)"
         if max_similarity > threshold:
-            result = f"Plagiarized (Similarity: {max_similarity:.2f})"
-        else:
-            result = "Not plagiarized (RAG)"
-        logging.info(f"RAG-only check result: {result}")
-        return {"input_code": code, "similar_code": similar_codes, "result": result}
+            plagiarism_result = f"Plagiarized (Similarity: {max_similarity:.2f})"
+
+        CHECK_RESULTS.append({
+            "check_type": check_type,
+            "input_code": code,
+            "result": plagiarism_result,
+            "similarity": max_similarity,
+            "references": None
+        })
+
+        logging.info(f"RAG-only check result: {plagiarism_result}")
+        return JSONResponse(content={"input_code": code, "similar_code": similar_codes, "result": plagiarism_result})
     except Exception as e:
         logging.error(f"Error during RAG-only plagiarism check: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @app.post("/check_plagiarism_llm_only/")
-async def check_plagiarism_llm_only(code: str = Form(...)):
+async def check_plagiarism_llm_only(code: str = Form(...), check_type: str = Form("LLM Only")):
     logging.info(f"Received request for LLM-only plagiarism check with code: {code[:50]}...")
     try:
         prompt = f"""Is the following code snippet likely plagiarized? Answer 'yes' or 'no'.\n```\n{code}\n```\nPlagiarism Verdict: """
@@ -105,13 +129,20 @@ async def check_plagiarism_llm_only(code: str = Form(...)):
         result = "Plagiarized (LLM)" if "yes" in llm_response else "Not plagiarized (LLM)"
         logging.info(f"LLM-only raw response: {response}")
         logging.info(f"LLM-only check result: {result}")
-        return {"input_code": code, "result": result}
+        CHECK_RESULTS.append({
+            "check_type": check_type,
+            "input_code": code,
+            "result": result,
+            "similarity": None,
+            "references": None
+        })
+        return JSONResponse(content={"input_code": code, "result": result})
     except Exception as e:
         logging.error(f"Error during LLM-only plagiarism check: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @app.post("/check_plagiarism_full/")
-async def check_plagiarism_full(code: str = Form(...)):
+async def check_plagiarism_full(code: str = Form(...), check_type: str = Form("Full System")):
     logging.info(f"Received request for full system plagiarism check with code: {code[:50]}...")
     try:
         embedding = plagiarism_checker.embedder.embed([code])[0].tolist()
@@ -152,11 +183,38 @@ async def check_plagiarism_full(code: str = Form(...)):
             else:
                 plagiarism_result = "Plagiarized"
 
+        CHECK_RESULTS.append({
+            "check_type": check_type,
+            "input_code": code,
+            "result": plagiarism_result,
+            "similarity": None,
+            "references": ", ".join(references)
+        })
+
         logging.info(f"Full system check result: {plagiarism_result}")
-        return {"input_code": code, "context": context, "result": plagiarism_result}
+        return JSONResponse(content={"input_code": code, "context": context, "result": plagiarism_result, "references": references})
     except Exception as e:
         logging.error(f"Error during full system plagiarism check: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+@app.post("/save_check_results/")
+async def save_check_results():
+    try:
+        if not CHECK_RESULTS:
+            return {"message": "No plagiarism check results to save."}
+
+        with open(CHECK_RESULTS_CSV_FILENAME, mode='w', newline='') as csvfile:
+            fieldnames = CHECK_RESULTS[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writeheader()
+            for row in CHECK_RESULTS:
+                writer.writerow(row)
+
+        return {"message": f"Plagiarism check results saved to {CHECK_RESULTS_CSV_FILENAME}"}
+    except Exception as e:
+        logging.error(f"Error saving plagiarism check results to CSV: {e}")
+        raise HTTPException(status_code=500, detail="Error saving plagiarism check results.")
 
 if __name__ == "__main__":
     import uvicorn
