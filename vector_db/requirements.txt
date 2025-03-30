@@ -1,0 +1,4 @@
+chromadb==0.4.15
+chroma-hnswlib==0.7.3 # Likely a dependency of chromadb
+fastapi==0.115.12 # If your vector_db exposes an API
+uvicorn==0.34.0 # If your vector_db exposes an API

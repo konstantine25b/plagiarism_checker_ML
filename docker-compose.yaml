@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  github_extractor:
+    build:
+      context: .  
+      dockerfile: ./github_extractor/Dockerfile 
+    volumes:
+      - ./data:/app/data
+
+  code_embedder:
+    build:
+      context: ./code_embedder
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - github_extractor
+
+  vector_db:
+    build:
+      context: ./vector_db
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - code_embedder
+
+  api:
+    build:
+      context: ./plagiarism_checker
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - vector_db
