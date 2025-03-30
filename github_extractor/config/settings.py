@@ -9,6 +9,8 @@ class Settings:
     REPOSITORIES: List[str] = [
         "https://github.com/konstantine25b/Backend-Of-Plants-Ecommerce-Website",
         "https://github.com/konstantine25b/realtime-auth-signin-tracker-frontend",
+        "https://github.com/konstantine25b/realtime-auth-signin-tracker-backend",
+        "https://github.com/konstantine25b/SnakeGame",
         # "https://github.com/langgenius/dify",
         # "https://github.com/NirDiamant/GenAI_Agents",
         # "https://github.com/shadps4-emu/shadPS4",
@@ -21,21 +23,11 @@ class Settings:
     
     # Storage paths
     REPOS_ROOT: str = "repositories"
-    VECTOR_DB_PATH: str = "data/vector_db"
-    
-    # Embedding configuration
-    EMBEDDING_MODEL_NAME: str = "sentence-transformers/all-MiniLM-L6-v2"
-    EMBEDDING_BATCH_SIZE: int = 32
-    
-    # Processing settings
-    CHUNK_SIZE: int = 1000
-    MIN_CODE_LENGTH: int = 50
+
 
     def __init__(self):
-        """Initialize paths - called when settings is instantiated"""
-        # Create required directories
+        """Initialize required directories"""
         Path(self.REPOS_ROOT).mkdir(parents=True, exist_ok=True)
-        Path(self.VECTOR_DB_PATH).mkdir(parents=True, exist_ok=True)
 
 # Instantiate settings
 settings = Settings()
