@@ -1,8 +1,163 @@
-# plagiarism_checker_ML
+# Code Plagiarism Checker System
 
-# PROJECT DESCRIPTION:
+## Project Description
 
-ENGLISH:
+This project is a demo system for detecting code plagiarism. The objective is to build a system that can find similar code snippets from existing code repositories based on a user-provided code snippet and determine whether the presented code is plagiarized. This system utilizes a combination of Retrieval-Augmented Generation (RAG) principles and Large Language Models (LLMs) to achieve this.
+
+## Main Stages of the Project
+
+### Fetching Code Repositories
+
+This stage involves gathering a collection of code repositories that will serve as the knowledge base for plagiarism detection. For this demo, we are using a predefined list of GitHub repository URLs. These repositories are cloned to the local environment using `git clone`.
+
+
+### Code Indexing
+
+In this stage, the system searches for code files (e.g., `.py` files) within the downloaded repositories. For each code file, a vector representation (embedding) is calculated using a suitable embedding model. These embeddings capture the semantic content of the code. The generated embeddings are then stored in a vector database (ChromaDB in this case) for efficient similarity searching.
+
+### Building the Plagiarism Checking System (RAG Principle)
+
+This system provides an API (built using FastAPI) that accepts code content as a string from the user. When a code snippet is submitted:
+
+1.  The system generates an embedding for the provided code.
+2.  It searches the vector database for similar code files based on the embedding.
+3.  The original user code and the retrieved similar code snippets (as context) are sent to an LLM (via the OpenAI API).
+4.  The LLM, guided by prompt engineering, determines if the user's code is plagiarized and responds with either "Yes" or "No", potentially referencing the similar code files found.
+
+The system offers three ways to check for plagiarism through the API:
+
+* **RAG Only:** Determines plagiarism based on a similarity threshold from the vector database search.
+* **LLM Only:** Directly queries the LLM with the user's code snippet to assess for plagiarism.
+* **Full System:** Combines vector search and LLM with context to provide a plagiarism verdict with potential references.
+
+### System Evaluation
+
+A small dataset of plagiarized and non-plagiarized code snippets can be created to evaluate the performance of the following approaches:
+
+1.  **Only RAG:** Using a similarity threshold to detect plagiarism.
+2.  **Only LLM:** Directly asking the LLM about plagiarism.
+3.  **Your Complete System:** The full RAG-based system with LLM.
+
+The results of this evaluation (input code, expected outcome, actual outcome, similarity scores/references) are saved in a CSV file (`evaluation_results.csv`).
+
+## Important Notes (This is a Demo System)
+
+* This project demonstrates the concept of plagiarism checking and is not a fully optimized system.
+* Indexing a large number of GitHub repositories requires significant resources and time. For simplicity, we are using a few repositories with smaller code files.
+* In an ideal scenario, plagiarism checking would occur between repositories. However, for simplicity, the comparison is limited to individual code files.
+
+## Requirements
+
+* **Indexing Script (`github_extractor/main.py`, `code_embedder/main.py`, `vector_db/main.py`):** Downloads repositories and indexes code files into the vector database.
+* **Plagiarism Checking API (`plagiarism_checker/main.py`):** Built using FastAPI, accepts code content, and returns a plagiarism verdict.
+* **Evaluation Script (part of `plagiarism_checker/main.py`):** Included within the FastAPI application to evaluate the system.
+
+## Installation
+
+1.  **Prerequisites:**
+    * Python 3.11+
+    * pip (Python package installer)
+    * Git (recommended)
+
+2.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/konstantine25b/plagiarism_checker_ML
+    cd plagiarism_checker_ML
+    ```
+
+3.  **Create a Virtual Environment:**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # On macOS/Linux
+    # venv\Scripts\activate  # On Windows
+    ```
+
+4.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    # If no requirements.txt, install manually:
+    # pip install fastapi uvicorn python-dotenv openai chromadb sentence-transformers nltk scikit-learn
+    ```
+
+5.  **Set up OpenAI API Key:**
+    * Create a `.env` file in the root directory.
+    * Add your OpenAI API key:
+        ```
+        OPENAI_API_KEY=<your_openai_api_key>
+        ```
+
+## Running the Plagiarism Checker
+
+You can run the plagiarism checker using the combined script or by running the API directly.
+
+**Using the Combined Script (`main.py` in the root directory)**
+
+1.  Ensure your virtual environment is activated.
+2.  Navigate to the root directory of the project.
+3.  Run:
+    ```bash
+    python3 main.py
+    ```
+    This will execute the GitHub extractor, code embedder, vector database setup, and finally start the FastAPI application. The API will be accessible at `http://0.0.0.0:8000`. Press `CTRL+C` to stop.
+
+
+## Component Explanation
+
+1.  **`github_extractor/main.py`:**
+    * **Installation:** No specific installation needed beyond the project dependencies.
+    * **Running:** Executed by `python3 github_extractor/main.py`.
+    * **Functionality:** Clones the predefined list of GitHub repositories to the `data/repositories` directory.
+
+2.  **`code_embedder/main.py`:**
+    * **Installation:** Requires the project dependencies, including `sentence-transformers`.
+    * **Running:** Executed by `python3 code_embedder/main.py`.
+    * **Functionality:** Reads code files from the cloned repositories, generates embeddings for them using a pre-trained model, and saves the embeddings and metadata to `data/embeddings/embeddings.npy` and `data/embeddings/metadata.json`.
+
+3.  **`vector_db/main.py`:**
+    * **Installation:** Requires the project dependencies, including `chromadb`.
+    * **Running:** Executed by `python3 vector_db/main.py`.
+    * **Functionality:** Loads the embeddings and metadata generated by `code_embedder/main.py` and creates or updates a ChromaDB vector database in the `data` directory.
+
+4.  **`plagiarism_checker/main.py`:**
+    * **Installation:** Requires the project dependencies, including `fastapi`, `uvicorn`, and `openai`.
+    * **Running:** Executed by `python3 plagiarism_checker/main.py` (from the `plagiarism_checker` directory).
+    * **Functionality:** Starts the FastAPI web application. It provides endpoints to:
+        * Display a web interface for plagiarism checking.
+        * Check plagiarism using RAG only (based on similarity).
+        * Check plagiarism using LLM only (direct query to OpenAI).
+        * Check plagiarism using the full system (RAG + LLM with context).
+        * Save the results of plagiarism checks to `plagiarism_check_results.csv`.
+        * (If evaluation features are added) Evaluate the different plagiarism checking approaches and save results to `evaluation_results.csv`.
+
+5.  **`main.py` (in the root directory):**
+    * **Installation:** No specific installation needed.
+    * **Running:** Executed by `python3 main.py` (from the root directory).
+    * **Functionality:** A convenience script to run all the main components sequentially: GitHub repository cloning, code embedding, vector database creation, and starting the plagiarism checker API.
+
+## CSV Output Explanation
+
+The plagiarism checker can save results to CSV files in the same directory where the FastAPI application (`plagiarism_checker/main.py`) is run.
+
+1.  **`plagiarism_check_results.csv`:** This file stores the results of each plagiarism check you perform through the web interface when you click the "Save Plagiarism Check Results to CSV" button. It includes the following columns:
+    * `check_type`: The type of plagiarism check performed ("Full System", "RAG Only", "LLM Only").
+    * `input_code`: The code snippet you submitted for checking.
+    * `result`: The plagiarism detection result (e.g., "Plagiarized (Similarity: ...)").
+    * `similarity`: The similarity score (only for RAG Only checks).
+    * `references`: The file paths of the reference code files identified by the full system.
+
+2.  **`evaluation_results.csv` (if evaluation features are added):** This file stores the results of the system evaluation. It includes columns such as:
+    * `input_code`: The code snippet used for evaluation.
+    * `expected_plagiarism`: The expected plagiarism status (yes/no).
+    * `actual_result`: The plagiarism result from the system.
+    * `similarity`: The similarity score (for RAG).
+    * `references`: The references identified by the full system.
+    * `expected_references`: The expected reference file paths (for the full system).
+    * `evaluation_status`: Whether the system's result matched the expected outcome.
+
+
+
+### Project full description:
+
 Final Project: Code Plagiarism Checker System
 Objective: In this project, you will create a demo system for detecting code plagiarism. Your task is to build a system that can find similar code snippets from existing code repositories based on the code snippet provided by the user and determine whether the presented code is plagiarized.
 
@@ -59,50 +214,3 @@ Break the project into smaller, manageable sub-tasks.
 Use Git from the beginning; don’t upload everything in one commit at the end.
 Document your code and the project architecture.
 Don’t hesitate to ask questions if something is unclear.
-
-GEO:
-
-ფინალური პროექტი: კოდის პლაგიარიზმის შემმოწმებელი სისტემა
-მიზანი: ამ პროექტის ფარგლებში თქვენ შექმნით კოდის პლაგიარიზმის დემო სისტემას. თქვენი ამოცანაა ააწყოთ სისტემა, რომელიც შეძლებს მომხმარებლის მიერ მოწოდებული კოდის ნაწყვეტის მსგავსი კოდის მოძიებას არსებულ კოდის რეპოზიტორიებში და დაადგენს, არის თუ არა წარმოდგენილი კოდი პლაგიატი.
-პროექტის ძირითადი ეტაპები:კოდის რეპოზიტორიების მოპოვება:
-თქვენ უნდა მოიპოვოთ კოდის რეპოზიტორიების ჩამონათვალი. ამისათვის შეგიძლიათ გამოიყენოთ GitHub API ან უბრალოდ კონფიგურაციის ფაილში მიუთითოთ რეპოზიტორიების ლინკები.
-მოპოვებული რეპოზიტორიები უნდა გადმოწეროთ თქვენს ლოკალურ გარემოში git clone-ის გამოყენებით.
-ჩვენი რჩევაა რადგან მარტივ სისტემას ვაწყობთ აიღოთ მარტივი 2-3 რეპოზიტორია.
-კოდის ინდექსირება:
-გადმოწერილი რეპოზიტორიებიდან უნდა მოიძიოთ კოდის ფაილები (მაგალითად, .py, .java, .c და ა.შ.).
-თითოეული კოდის ფაილისთვის უნდა გამოთვალოთ ვექტორული წარმოდგენა (ემბედინგი). ამისათვის თქვენ უნდა შეარჩიოთ შესაბამისი ემბედინგ მოდელი Hugging Face-ის ბიბლიოთეკაში. სასურველია იპოვოთ მოდელი, რომელიც კარგად მუშაობს კოდის სემანტიკური შინაარსის წარმოსადგენად.
-მიღებული ემბედინგები უნდა შეინახოთ ვექტორულ მონაცემთა ბაზაში. შეგიძლიათ გამოიყენოთ ისეთი ბიბლიოთეკები, როგორიცაა faiss, chromadb, pinecone ან სხვა თქვენთვის სასურველი ვარიანტი.
-პლაგიარიზმის შემოწმების სისტემის აწყობა (RAG პრინციპი):
-თქვენ უნდა შექმნათ API (მაგალითად, FastAPI-ის გამოყენებით), რომელიც მიიღებს მომხმარებლის მიერ ატვირთული კოდის ფაილის კონტენტს (არა თვითონ ფაილს, არამედ მის შიგთავსს, როგორც სტრინგს).
-როდესაც მომხმარებელი გამოაგზავნის კოდის ნაწყვეტს, თქვენმა სისტემამ ჯერ ვექტორულ მონაცემთა ბაზაში უნდა მოძებნოს მსგავსი კოდის ფაილები. ამისათვის გამოიყენებთ მოწოდებული კოდის ნაწყვეტის ემბედინგს და ვექტორული ბაზის ძიების ფუნქციას.
-შემდეგ, თქვენ უნდა დაუკავშირდეთ LLM-ებს თქვენთვის სასურველი API-ის საშუალებით. თქვენ უნდა გადასცეთ მთლიანი აგრეგირებული პრომპტი LLM-ს მომხმარებლის მიერ მოწოდებული კოდის ნაწყვეტით და ვექტორული ბაზიდან დაბრუნებული მსგავსი კოდის ფაილებით (როგორც კონტექსტი).
-მნიშვნელოვანია: LLM-მა პასუხად უნდა დააბრუნოს მხოლოდ და მხოლოდ ორი სიტყვა: "კი" (თუ კოდი პლაგიატია) ან "არა" (თუ კოდი არ არის პლაგიატი). ამის მისაღწევად თქვენ უნდა გამოიყენოთ პრომპტ ინჟინერიის ტექნიკები. ასევე, სთხოვეთ LLM-ს მიუთითოს ვექტორული ბაზიდან დაბრუნებული კოდის ფაილები, როგორც რეფერენსები (თუ პლაგიატი დადასტურდა).
-სისტემის ევალუაცია:
-თქვენ უნდა შექმნათ მცირე ზომის მონაცემთა ნაკრები, რომელიც შეიცავს პლაგიატისა და არაპლაგიატის შემთხვევებს. ეს შეგიძლიათ გააკეთოთ ხელით ან ხელოვნური ინტელექტის დახმარებით.
-შექმნილი მონაცემთა ნაკრების გამოყენებით, თქვენ უნდა შეადაროთ შემდეგი სამი მიდგომის შედეგები:
-მხოლოდ RAG: გამოიყენეთ თქვენი აწყობილი RAG სისტემა და რაიმე ზღვრული მნიშვნელობა (threshold) მსგავსების დასადგენად, რათა გადაწყვიტოთ არის თუ არა კოდი პლაგიატი.
-მხოლოდ LLM: პირდაპირ მიმართეთ LLM-ს მომხმარებლის მიერ მოწოდებული კოდის ნაწყვეტით და სთხოვეთ შეაფასოს არის თუ არა ის პლაგიატი.
-თქვენი აწყობილი სისტემა: გამოიყენეთ სრულად ფუნქციონალური სისტემა, რომელიც იყენებს ვექტორულ ძიებას და LLM-ს რეფერენსებით პასუხის გასაცემად.
-ევალუაციის შედეგები უნდა შეინახოთ csv ფაილად.
-მნიშვნელოვანი შენიშვნები (ეს არის დემო სისტემა):
-გაითვალისწინეთ, რომ ეს პროექტი უფრო მეტად წარმოადგენს პლაგიარიზმის შემოწმების კონცეფციის დემონსტრაციას და არა იდეალურ, სრულყოფილ სისტემას.
-დიდი რაოდენობით GitHub რეპოზიტორიების ინდექსირება მოითხოვს მნიშვნელოვან გამოთვლით რესურსებს (ემბედინგების გამოთვლა) და დროს. ასევე არსებობს ტექნიკური სირთულეები, რომლებიც დაკავშირებულია დიდი ზომის კოდის ფაილების დამუშავებასთან. შესაძლოა, თქვენ მოგიწიოთ რაიმე ხრიკის მოფიქრება, რათა შეძლოთ დიდი კოდის ფაილების შედარება. ამიტომაც აარჩიეთ მარტივი და ცოტა რაოდენობის რეპოზიტორიები.
-ასევე გასააზრებელია რომ იდეალურ შემთხვევაში, პლაგიარიზმის შემოწმება უნდა მოხდეს რეპოზიტორიებს შორის და არა ცალკეულ კოდის ფაილებს შორის. თუმცა, პროექტის სიმარტივისთვის, ჩვენ შემოვიფარგლებით კოდის ფაილების (როგორც ტექსტური ფაილების) შედარებით.
-მოთხოვნები:
-ინდექსირების სკრიპტი: უნდა დაწეროთ ცალკე Python სკრიპტი, რომელიც შეასრულებს რეპოზიტორიების გადმოწერას და კოდის ფაილების ინდექსირებას ვექტორულ მონაცემთა ბაზაში. ეს სკრიპტი უნდა იყოს კონტეინერიზებული Docker-ის გამოყენებით.
-ემბედინგ სერვერი: ემბედინგ მოდელი უნდა იყოს დაჰოსტილი, როგორც ცალკე სერვისი. ეს სერვისიც უნდა იყოს კონტეინერიზებული Docker-ის გამოყენებით.
-პლაგიარიზმის შემოწმების API: პასუხისმგებელი API უნდა იყოს აწყობილი FastAPI-ის გამოყენებით. ეს API მიიღებს HTTP POST მოთხოვნას, რომლის body პარამეტრიც იქნება კოდის ფაილის კონტენტი (სტრინგის სახით). API-მ უნდა დააბრუნოს boolean ცვლადი, რომელიც მიუთითებს არის თუ არა კოდი პლაგიატი. ეს API ასევე უნდა იყოს კონტეინერიზებული Docker-ის გამოყენებით.
-ევალუაციის სკრიპტი: უნდა დაწეროთ სკრიპტი, რომელიც გაუშვებს ევალუაციის პროცესს და შეადარებს სამივე მიდგომის შედეგებს ასევე დოკერიზებული.
-პროექტის წარდგენა:
-პროექტის დასრულების შემდეგ, თქვენ ინდივიდუალურად წარადგენთ თქვენს ნამუშევარს. ჩვენ არ მივიღებთ პროექტებს ZIP ფაილის სახით. თქვენ უნდა ატვირთოთ თქვენი პროექტის კოდი GitHub-ის თქვენს პირად რეპოზიტორიაში. რეპოზიტორია უნდა იყოს საჯარო(დეველოპმენტის პროცესში არ უნდა იყოს საჯარო რადგან თვიდან ავიცილოთ პლაგიატი ;) თქვენივე კოდი იქნება გაშვებული ერთმანეთის პლაგიატზე 😀(ვხუმრობთ!)) ან ხელმისაწვდომი ჩვენთვის. წარდგენისას თქვენ უნდა მოგვაწოდოთ ამ რეპოზიტორიის ლინკი. რეპოზიტორიაში უნდა გქონდეთ კარგად აღწერილი README.md ფაილი ინგლისურ ენაზე, სადაც დეტალურად იქნება ახსნილი პროექტის სტრუქტურა, გაშვების ინსტრუქციები და სხვა მნიშვნელოვანი ინფორმაცია. წარდგენის დროს თქვენ ასევე ჩაგვიტარებთ თქვენი სისტემის დემონსტრაციას, მოგვიყვებით, თუ როგორ ააწყვეთ სისტემა, რა ტექნოლოგიები გამოიყენეთ, რა სირთულეებს შეხვდით და როგორ გადაჭერით ისინი. ასევე უნდა გვაჩვენოთ თქვენი კოდი და უპასუხოთ ჩვენს კითხვებს.
-ვადები და მხარდაჭერა:
-ამ პროექტის დასასრულებლად თქვენ გექნებათ 3 კვირა. ამ დროის განმავლობაში შეგიძლიათ მოგვმართოთ ნებისმიერი სახის კითხვით, რომელიც დაგეხმარებათ პროექტის წარმატებით შესრულებაში.
-შეფასება:
-გაითვალისწინეთ, რომ პროექტის ნაწილობრივი შესრულებაც შეფასდება. ამიტომაც, ნუ შეშინდებით პროექტის სირთულით და შეეცადეთ მაქსიმალურად კარგად შეასრულოთ დავალების ის ნაწილიც კი, რომლის სრულად დასრულებასაც ვერ მოახერხებთ.
-დამატებითი რეკომენდაციები:
-დაიწყეთ პროექტი ადრე, რათა საკმარისი დრო გქონდეთ ყველა ეტაპის დასასრულებლად.
-დაყავით პროექტი მცირე, მართვად ქვედავალებებად.
-გამოიყენეთ Git თავიდანვე, მხოლოდ 1 კომიტად არ ატვირთოთ ყველაფერი ბოლოს.
-დოკუმენტირება გაუკეთეთ თქვენს კოდს და პროექტის არქიტექტურას.
-ნუ მოგერიდებათ კითხვების დასმა, თუ რაიმე გაუგებარია.
-წარმატებებს გისურვებთ თქვენს ფინალურ პროექტზე!
