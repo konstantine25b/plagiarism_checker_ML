@@ -1,40 +1,161 @@
 check_type,input_code,result,similarity,references
-Full System,"class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    username = models.CharField(
-        max_length=150,
-    )
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        blank=False
-    )
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)",Plagiarized,,
-RAG Only,"class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    username = models.CharField(
-        max_length=150,
-    )
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        blank=False
-    )
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)",Plagiarized (Similarity: 0.99),0.9850461443691334,
-LLM Only,"class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    username = models.CharField(
-        max_length=150,
-    )
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        blank=False
-    )
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)",Not plagiarized (LLM),,
+Full System,"const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
+  const [size, setSize] = useState();
+  const [price, setPrice] = useState({
+    price_gte: undefined,
+    price_lte: undefined,
+  });
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    [""allProducts"", currentPage, size, price],
+    () => fetchData(size, price.min, price.max, currentPage, dataInfo, prevPage)
+  );
+
+  if (isLoading) {
+    return <div></div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching subcategory data</div>;
+  }
+
+  return (
+    <Container>
+      <Component1>
+        <LeftSide
+ ",Plagiarized,,
+RAG Only,"const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
+  const [size, setSize] = useState();
+  const [price, setPrice] = useState({
+    price_gte: undefined,
+    price_lte: undefined,
+  });
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    [""allProducts"", currentPage, size, price],
+    () => fetchData(size, price.min, price.max, currentPage, dataInfo, prevPage)
+  );
+
+  if (isLoading) {
+    return <div></div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching subcategory data</div>;
+  }
+
+  return (
+    <Container>
+      <Component1>
+        <LeftSide
+ ",Plagiarized (Similarity: 0.99),0.9906873106956482,
+LLM Only,"const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
+  const [size, setSize] = useState();
+  const [price, setPrice] = useState({
+    price_gte: undefined,
+    price_lte: undefined,
+  });
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    [""allProducts"", currentPage, size, price],
+    () => fetchData(size, price.min, price.max, currentPage, dataInfo, prevPage)
+  );
+
+  if (isLoading) {
+    return <div></div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching subcategory data</div>;
+  }
+
+  return (
+    <Container>
+      <Component1>
+        <LeftSide
+ ",Not plagiarized (LLM),,
+RAG Only,"<Project Sdk=""Microsoft.NET.Sdk"">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+</Project>
+ ",Plagiarized (Similarity: 0.98),0.9762973924843185,
+Full System,"<Project Sdk=""Microsoft.NET.Sdk"">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+</Project>
+ ",Plagiarized,,
+Full System,"  public static void TestContainsFunction()
+    {
+        var sortedList = new List<int> { 1, 3, 5, 7, 9, 11, 13 };
+        var  repetitiveElements = new List<int>() { 1,4, 4, 4, 4, 5, 6 ,6 ,6 ,6, 7, 7};
+        
+        Console.WriteLine(""Running test cases...\n"");
+
+        RunTestCase(sortedList, 5, true, ""Element is present in the list"");
+        RunTestCase(sortedList, 6, false, ""Element is not in the list"");
+        RunTestCase([], 10, false, ""Empty list test case"");
+        RunTestCase([4], 4, true, ""Single element list (match)"");
+        RunTestCase([4], 2, false, ""Single element list (no match)"");
+        RunTestCase(repetitiveElements, 6, true, ""repetitive leements test"");
+        RunTestCase(repetitiveElements, 100, false, ""repetitive elements test"");
+        RunTestCase([1, 2], 2, true, ""two element list (match)"");
+        RunTestCase([1, 2], 0, false, ""two element list (no match)"");
+     
+ ",Plagiarized,,
+RAG Only,"  public static void TestContainsFunction()
+    {
+        var sortedList = new List<int> { 1, 3, 5, 7, 9, 11, 13 };
+        var  repetitiveElements = new List<int>() { 1,4, 4, 4, 4, 5, 6 ,6 ,6 ,6, 7, 7};
+        
+        Console.WriteLine(""Running test cases...\n"");
+
+        RunTestCase(sortedList, 5, true, ""Element is present in the list"");
+        RunTestCase(sortedList, 6, false, ""Element is not in the list"");
+        RunTestCase([], 10, false, ""Empty list test case"");
+        RunTestCase([4], 4, true, ""Single element list (match)"");
+        RunTestCase([4], 2, false, ""Single element list (no match)"");
+        RunTestCase(repetitiveElements, 6, true, ""repetitive leements test"");
+        RunTestCase(repetitiveElements, 100, false, ""repetitive elements test"");
+        RunTestCase([1, 2], 2, true, ""two element list (match)"");
+        RunTestCase([1, 2], 0, false, ""two element list (no match)"");
+     
+ ",Plagiarized (Similarity: 0.98),0.983523428440094,
+Full System,"CHIP DMux {
+    IN in, sel;
+    OUT a, b;
+
+    PARTS:
+    Not(in=sel, out=nsel); 
+    And(a=in, b=nsel, out=a); 
+    And(a=in, b=sel, out=b);
+    
+    //// Replace this comment with your code.
+}
+     
+ ",Plagiarized,,
+RAG Only,"CHIP DMux {
+    IN in, sel;
+    OUT a, b;
+
+    PARTS:
+    Not(in=sel, out=nsel); 
+    And(a=in, b=nsel, out=a); 
+    And(a=in, b=sel, out=b);
+    
+    //// Replace this comment with your code.
+}",Not plagiarized (RAG),0.9841892719268799,
