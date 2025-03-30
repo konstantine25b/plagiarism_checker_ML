@@ -8,6 +8,8 @@ env/
 ENV/
 repositories/
 data/
+embeddings/
+
 .pytest_cache
 # Dependency directories
 *.egg-info/
