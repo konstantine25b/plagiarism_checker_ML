@@ -227,6 +227,101 @@ def test_embedder_empty_input():
         # Verify mock was called with empty list
         embedder.embed.assert_called_once_with([])
         
-        
+def test_metadata_generator_basic(tmp_path):
+    """Test basic metadata generation"""
+    from src.metadata_generator import MetadataGenerator
+    
+    # Create a test file
+    test_file = tmp_path / "test.py"
+    test_file.write_text("def test(): pass")
+    
+    # Generate metadata
+    metadata = MetadataGenerator.generate(str(test_file))
+    
+    # Verify basic fields
+    assert metadata is not None
+    assert metadata["file_path"] == str(test_file)
+    assert metadata["file_name"] == "test.py"
+    assert metadata["file_extension"] == ".py"
+    assert metadata["language"] == "Python"
+    assert isinstance(metadata["file_size"], int)
+    assert isinstance(metadata["last_modified"], str)
+    assert len(metadata["file_hash"]) == 32  # MD5 hash length
+
+def test_metadata_generator_repo_detection(tmp_path):
+    """Test repository name extraction"""
+    from src.metadata_generator import MetadataGenerator
+    
+    # Create nested repo structure
+    repo_dir = tmp_path / "repositories" / "my_repo" / "src"
+    repo_dir.mkdir(parents=True)
+    test_file = repo_dir / "test.py"
+    test_file.write_text("content")
+    
+    metadata = MetadataGenerator.generate(str(test_file))
+    assert metadata["repo_name"] == "my_repo"
+
+def test_metadata_generator_unknown_repo(tmp_path):
+    """Test with files not in a repository structure"""
+    from src.metadata_generator import MetadataGenerator
+    
+    test_file = tmp_path / "test.py"
+    test_file.write_text("content")
+    
+    metadata = MetadataGenerator.generate(str(test_file))
+    assert metadata["repo_name"] == "unknown"
+
+def test_metadata_generator_language_detection(tmp_path):
+    """Test language detection for various file types"""
+    from src.metadata_generator import MetadataGenerator
+    
+    test_cases = [
+        ("test.py", "Python"),
+        ("script.js", "JavaScript"),
+        ("program.java", "Java"),
+        ("unknown.xyz", "unknown")
+    ]
+    
+    for filename, expected_lang in test_cases:
+        test_file = tmp_path / filename
+        test_file.write_text("content")
+        metadata = MetadataGenerator.generate(str(test_file))
+        assert metadata["language"] == expected_lang
+
+def test_metadata_generator_error_handling(tmp_path):
+    """Test behavior with non-existent files"""
+    from src.metadata_generator import MetadataGenerator
+    
+    # Test with non-existent file
+    metadata = MetadataGenerator.generate(str(tmp_path / "nonexistent.py"))
+    assert metadata is None
+    
+    # Test with directory instead of file
+    dir_path = tmp_path / "directory"
+    dir_path.mkdir()
+    metadata = MetadataGenerator.generate(str(dir_path))
+    assert metadata is None
+
+def test_metadata_generator_hash_consistency(tmp_path):
+    """Test that file hashes are consistent"""
+    from src.metadata_generator import MetadataGenerator
+    
+    test_file = tmp_path / "test.py"
+    content = "def hello(): return 'world'"
+    test_file.write_text(content)
+    
+    # Get two metadata generations
+    metadata1 = MetadataGenerator.generate(str(test_file))
+    metadata2 = MetadataGenerator.generate(str(test_file))
+    
+    # Hashes should be identical for same content
+    assert metadata1["file_hash"] == metadata2["file_hash"]
+    
+    # Change content and verify hash changes
+    test_file.write_text(content + "modified")
+    metadata3 = MetadataGenerator.generate(str(test_file))
+    assert metadata1["file_hash"] != metadata3["file_hash"]
+
+    
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

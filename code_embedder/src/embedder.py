@@ -26,3 +26,5 @@ class CodeBertEmbedder:
         mask = inputs['attention_mask'].unsqueeze(-1)
         embeddings = (outputs.last_hidden_state * mask).sum(1) / mask.sum(1)
         return embeddings.cpu().numpy()
+    
+    

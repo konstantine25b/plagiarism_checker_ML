@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+import json
 import logging
-import os
-import sys
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional
+import sys
+from datetime import datetime
 
-# Configure logging FIRST to avoid undefined logger errors
+# Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
@@ -14,79 +15,119 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-# Fix HuggingFace tokenizer warning
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+def save_embeddings(embeddings: np.ndarray, 
+                   metadata: List[Dict], 
+                   output_dir: Path) -> Dict:
+    """Save embeddings and metadata with validation"""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save embeddings
+    embeddings_path = output_dir / "embeddings.npy"
+    np.save(embeddings_path, embeddings)
+    
+    # Save enriched metadata
+    full_metadata = {
+        "generated_at": datetime.now().isoformat(),
+        "embedding_version": "1.0",
+        "total_files": len(embeddings),
+        "files": metadata
+    }
+    
+    metadata_path = output_dir / "metadata.json"
+    with open(metadata_path, 'w', encoding='utf-8') as f:
+        json.dump(full_metadata, f, indent=2, ensure_ascii=False)
+    
+    return {
+        "embeddings_path": str(embeddings_path.absolute()),
+        "metadata_path": str(metadata_path.absolute()),
+        "count": len(embeddings)
+    }
 
-def main() -> Optional[Dict[str, np.ndarray]]:
-    """Run the complete embedding pipeline"""
+def main() -> Optional[Dict]:
+    """Run the embedding pipeline with proper metadata handling"""
     try:
-        # Add the project root to Python path
+        # Add project root to Python path
         project_root = Path(__file__).parent.parent
         sys.path.insert(0, str(project_root))
 
-        # Import modules using absolute paths
+        # Import modules
         from code_embedder.src.code_finder import CodeFinder
         from code_embedder.src.embedder import CodeBertEmbedder
+        from code_embedder.src.metadata_generator import MetadataGenerator
         from code_embedder.config.settings import settings
 
-        logger.info("=== Starting Code Embedding Service ===")
+        logger.info("=== Starting Embedding Pipeline ===")
         
-        # Initialize components - using code_dir instead of repos_root
+        # Initialize components
         finder = CodeFinder(
-            base_dir=settings.code_dir,  # Changed to use code_dir property
+            base_dir=settings.code_dir,
             extensions=settings.CODE_EXTENSIONS,
             ignore_dirs=settings.IGNORE_DIRS,
             max_size=settings.MAX_FILE_SIZE
         )
-        
         embedder = CodeBertEmbedder(model_name=settings.EMBEDDING_MODEL)
         
-        # Get files with metadata
+        # Process files
         code_files = finder.find_all_code_files()
         if not code_files:
             logger.error("No code files found in %s", settings.code_dir)
             return None
 
-        # Process in batches
         all_embeddings = []
+        all_metadata = []
         batch = []
-        processed_files = 0
         
-        for file in code_files:
-            if content := finder.read_file(file['path']):
-                batch.append(content)
-                
-                if len(batch) >= settings.EMBEDDING_BATCH_SIZE:
-                    embeddings = embedder.embed(batch)
-                    all_embeddings.append(embeddings)
-                    processed_files += len(batch)
-                    batch = []
-                    logger.info("Processed %d/%d files", processed_files, len(code_files))
+        for file_info in code_files:
+            file_path = file_info['path']
+            try:
+                if content := finder.read_file(file_path):
+                    # Generate enriched metadata
+                    metadata = MetadataGenerator.generate(file_path)
+                    if not metadata:
+                        continue
+                    
+                    batch.append(content)
+                    all_metadata.append(metadata)
+                    
+                    # Process batch when full
+                    if len(batch) >= settings.EMBEDDING_BATCH_SIZE:
+                        embeddings = embedder.embed(batch)
+                        all_embeddings.append(embeddings)
+                        batch = []
+                        logger.info("Processed %d files", len(all_metadata))
+            except Exception as e:
+                logger.error("Failed to process %s: %s", file_path, str(e))
+                continue
 
         # Process final batch
         if batch:
             embeddings = embedder.embed(batch)
             all_embeddings.append(embeddings)
-            processed_files += len(batch)
 
-        # Save results using output_dir property
-        output_path = Path(settings.output_dir) / "embeddings.npy"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+        # Combine and save results
+        if not all_embeddings:
+            logger.error("No valid embeddings generated")
+            return None
+            
         final_embeddings = np.vstack(all_embeddings)
-        np.save(output_path, final_embeddings)
-        
-        logger.info("Successfully saved %d embeddings to %s", len(code_files), output_path)
-        
-        return {
-            "embeddings": final_embeddings,
-            "metadata": code_files,
-            "output_path": str(output_path)
-        }
+        return save_embeddings(
+            embeddings=final_embeddings,
+            metadata=all_metadata,
+            output_dir=Path(settings.output_dir)
+        )
         
     except Exception as e:
         logger.error("Pipeline failed: %s", str(e), exc_info=True)
         return None
 
 if __name__ == "__main__":
-    main()
+    result = main()
+    if result:
+        print("\n=== Embedding Generation Successful ===")
+        print(f"Embeddings: {result['embeddings_path']}")
+        print(f"Metadata: {result['metadata_path']}")
+        print(f"Files Processed: {result['count']}")
+        sys.exit(0)
+    else:
+        print("\n!!! Embedding Generation Failed !!!")
+        sys.exit(1)
