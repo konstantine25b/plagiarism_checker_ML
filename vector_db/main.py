@@ -45,11 +45,12 @@ def main():
                     metadatas=[metadata['files'][i]],
                     ids=[str(i)]
                 )
-                logging.info(f"Added embedding with ID: {i}")
+                # logging.info(f"Added embedding with ID: {i}")
             else:
-                logging.warning(f"Embedding with ID: {i} already exists.")
+                pass
+                # logging.warning(f"Embedding with ID: {i} already exists.")
 
-        logging.info("Finished adding new embeddings to ChromaDB.")
+        # logging.info("Finished adding new embeddings to ChromaDB.")
     else:
         logging.error("Failed to load embeddings and metadata into ChromaDB.")
         return
