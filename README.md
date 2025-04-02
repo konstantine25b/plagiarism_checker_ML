@@ -93,6 +93,8 @@ The results of this evaluation (input code, expected outcome, actual outcome, si
 
 You can run the plagiarism checker using the combined script or by running the API directly.
 
+Keep in mind that the list of repositories to be checked is configured in the `/github_extractor/config/settings.py` file.
+
 **Using the Combined Script (`main.py` in the root directory)**
 
 1.  Ensure your virtual environment is activated.
