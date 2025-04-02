@@ -79,9 +79,12 @@ The results of this evaluation (input code, expected outcome, actual outcome, si
     # pip install fastapi uvicorn python-dotenv openai chromadb sentence-transformers nltk scikit-learn
     ```
 
-5.  **Set up OpenAI API Key:**
-    * Create a `.env` file in the root directory.
-    * Add your OpenAI API key:
+5.  **Set up .env:**
+    * Create a `.env` file in the root directory by
+    ```bash
+     cp .env.example .env
+    ```
+    * Add your OpenAI API or any other LLM key:
         ```
         OPENAI_API_KEY=<your_openai_api_key>
         ```
