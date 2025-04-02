@@ -3,23 +3,32 @@ from pathlib import Path
 from typing import List, Optional
 from git import Repo
 from git.exc import GitError
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RepoGetter:
     def __init__(self, repos_dir: str = "repositories"):
         self.repos_dir = Path(repos_dir)
         os.makedirs(self.repos_dir, exist_ok=True)
+        logger.info(f"Ensured repositories directory exists at: {self.repos_dir}")
+
 
     def clone_repo(self, repo_url: str) -> Optional[str]:
         """Clone or update a single repository"""
         try:
+            logger.info(f"Attempting to clone/update repository from URL: {repo_url}")
+     
             repo_name = self._extract_repo_name(repo_url)
             repo_path = self.repos_dir / repo_name
             
             if repo_path.exists():
                 self._update_repo(repo_path)
             else:
-                print(f"Cloning {repo_url}...")
+                logger.info(f"Cloning repository from: {repo_url} to: {repo_path}")
                 Repo.clone_from(repo_url, str(repo_path))
+                logger.info(f"Successfully cloned repository from {repo_url} to {repo_path}.")
+
                 
             return str(repo_path)
             

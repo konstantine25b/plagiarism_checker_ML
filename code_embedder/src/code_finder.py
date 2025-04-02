@@ -2,6 +2,10 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import os
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class CodeFinder:
     def __init__(
         self,
@@ -18,9 +22,11 @@ class CodeFinder:
     def find_all_code_files(self) -> List[Dict]:
         """Find all code files in all repositories"""
         code_files = []
+        logger.info(f"Starting to find all code files in: {self.base_dir}")
         for repo_dir in self.base_dir.iterdir():
             if repo_dir.is_dir():
                 code_files.extend(self._find_files_in_repo(repo_dir))
+        logger.info(f"Found a total of {len(code_files)} code files.")
         return code_files
 
     def _find_files_in_repo(self, repo_path: Path) -> List[Dict]:

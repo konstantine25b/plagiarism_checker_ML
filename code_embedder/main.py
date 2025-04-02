@@ -65,14 +65,16 @@ def main() -> Optional[Dict]:
             ignore_dirs=settings.IGNORE_DIRS,
             max_size=settings.MAX_FILE_SIZE
         )
+        logger.info(f"CodeFinder initialized with base_dir: {settings.code_dir}, extensions: {settings.CODE_EXTENSIONS}, ignore_dirs: {settings.IGNORE_DIRS}, max_size: {settings.MAX_FILE_SIZE}")
+
         embedder = CodeBertEmbedder(model_name=settings.EMBEDDING_MODEL)
-        
+        logger.info(f"CodeBertEmbedder initialized with model: {settings.EMBEDDING_MODEL}")
         # Process files
         code_files = finder.find_all_code_files()
         if not code_files:
             logger.error("No code files found in %s", settings.code_dir)
             return None
-
+        logger.info(f"Found {len(code_files)} code files to process.")
         all_embeddings = []
         all_metadata = []
         batch = []
@@ -91,6 +93,7 @@ def main() -> Optional[Dict]:
                     
                     # Process batch when full
                     if len(batch) >= settings.EMBEDDING_BATCH_SIZE:
+                        logger.info(f"Forming batch of {len(batch)} files for embedding.")
                         embeddings = embedder.embed(batch)
                         all_embeddings.append(embeddings)
                         batch = []
