@@ -159,3 +159,414 @@ RAG Only,"CHIP DMux {
     
     //// Replace this comment with your code.
 }",Not plagiarized (RAG),0.9841892719268799,
+
+
+check_type,input_code,result,similarity,references
+Full System,"import ""./interfaces/IERC20.sol"";
+import ""./interfaces/IUniswapV3MintCallback.sol"";
+import ""./interfaces/IUniswapV3SwapCallback.sol"";
+
+import ""./lib/Position.sol"";
+import ""./lib/Tick.sol"";
+
+contract UniswapV3Pool {
+    using Tick for mapping(int24 => Tick.Info);
+    using Position for mapping(bytes32 => Position.Info);
+    using Position for Position.Info;
+
+    error InsufficientInputAmount();
+    error InvalidTickRange();
+    error ZeroLiquidity();
+
+    event Mint(
+        address sender,
+        address indexed owner,
+        int24 indexed tickLower,
+        int24 indexed tickUpper,
+        uint128 amount,
+        uint256 amount0,
+        uint256 amount1
+    );
+
+    event Swap(
+        address indexed sender,
+        address indexed recipient,
+        int256 amount0,
+        int256 amount1,
+        uint160 sqrtPriceX96,
+        uint128 liquidity,
+        int24 tick
+    );
+",Plagiarized,,
+RAG Only,"import ""./interfaces/IERC20.sol"";
+import ""./interfaces/IUniswapV3MintCallback.sol"";
+import ""./interfaces/IUniswapV3SwapCallback.sol"";
+
+import ""./lib/Position.sol"";
+import ""./lib/Tick.sol"";
+
+contract UniswapV3Pool {
+    using Tick for mapping(int24 => Tick.Info);
+    using Position for mapping(bytes32 => Position.Info);
+    using Position for Position.Info;
+
+    error InsufficientInputAmount();
+    error InvalidTickRange();
+    error ZeroLiquidity();
+
+    event Mint(
+        address sender,
+        address indexed owner,
+        int24 indexed tickLower,
+        int24 indexed tickUpper,
+        uint128 amount,
+        uint256 amount0,
+        uint256 amount1
+    );
+
+    event Swap(
+        address indexed sender,
+        address indexed recipient,
+        int256 amount0,
+        int256 amount1,
+        uint160 sqrtPriceX96,
+        uint128 liquidity,
+        int24 tick
+    );
+",Plagiarized (Similarity: 0.99),0.9880980849266052,
+LLM Only,"import ""./interfaces/IERC20.sol"";
+import ""./interfaces/IUniswapV3MintCallback.sol"";
+import ""./interfaces/IUniswapV3SwapCallback.sol"";
+
+import ""./lib/Position.sol"";
+import ""./lib/Tick.sol"";
+
+contract UniswapV3Pool {
+    using Tick for mapping(int24 => Tick.Info);
+    using Position for mapping(bytes32 => Position.Info);
+    using Position for Position.Info;
+
+    error InsufficientInputAmount();
+    error InvalidTickRange();
+    error ZeroLiquidity();
+
+    event Mint(
+        address sender,
+        address indexed owner,
+        int24 indexed tickLower,
+        int24 indexed tickUpper,
+        uint128 amount,
+        uint256 amount0,
+        uint256 amount1
+    );
+
+    event Swap(
+        address indexed sender,
+        address indexed recipient,
+        int256 amount0,
+        int256 amount1,
+        uint160 sqrtPriceX96,
+        uint128 liquidity,
+        int24 tick
+    );
+",Not plagiarized (LLM),,
+RAG Only,"import ""forge-std/console.sol"";
+import ""forge-std/Script.sol"";
+import ""../src/UniswapV3Pool.sol"";
+import ""../src/UniswapV3Manager.sol"";
+import ""../test/ERC20Mintable.sol"";
+
+contract DeployDevelopment is Script {
+    function run() public {
+        uint256 wethBalance = 1 ether;
+        uint256 usdcBalance = 5042 ether;
+        int24 currentTick = 85176;
+        uint160 currentSqrtP = 5602277097478614198912276234240;
+
+        vm.startBroadcast();
+",Plagiarized (Similarity: 0.99),0.9894728660583496,
+Full System,"import ""forge-std/console.sol"";
+import ""forge-std/Script.sol"";
+import ""../src/UniswapV3Pool.sol"";
+import ""../src/UniswapV3Manager.sol"";
+import ""../test/ERC20Mintable.sol"";
+
+contract DeployDevelopment is Script {
+    function run() public {
+        uint256 wethBalance = 1 ether;
+        uint256 usdcBalance = 5042 ether;
+        int24 currentTick = 85176;
+        uint160 currentSqrtP = 5602277097478614198912276234240;
+
+        vm.startBroadcast();",Not plagiarized,,
+LLM Only,"import ""forge-std/console.sol"";
+import ""forge-std/Script.sol"";
+import ""../src/UniswapV3Pool.sol"";
+import ""../src/UniswapV3Manager.sol"";
+import ""../test/ERC20Mintable.sol"";
+
+contract DeployDevelopment is Script {
+    function run() public {
+        uint256 wethBalance = 1 ether;
+        uint256 usdcBalance = 5042 ether;
+        int24 currentTick = 85176;
+        uint160 currentSqrtP = 5602277097478614198912276234240;
+
+        vm.startBroadcast();
+",Not plagiarized (LLM),,
+RAG Only,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun
+",Plagiarized (Similarity: 0.98),0.9824199080467224,
+RAG Only,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun
+",Plagiarized (Similarity: 0.98),0.9824199080467224,
+Full System,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun",Plagiarized,,
+RAG Only,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun
+",Plagiarized (Similarity: 0.98),0.9824199080467224,
+LLM Only,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun
+",Not plagiarized (LLM),,
+Full System,"def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f""Price range: {price_low}-{price_upp}; current price: {price_cur}"")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f""Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}"")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f""Selling {amount_in/eth} USDC"")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print(""New price:"", (price_next / q96) ** 2)
+print(""New sqrtP:"", price_next)
+print(""New tick:"", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print(""USDC in:"", amoun",Not plagiarized,,
