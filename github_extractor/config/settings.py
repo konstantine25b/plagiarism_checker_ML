@@ -12,9 +12,9 @@ class Settings:
         "https://github.com/konstantine25b/realtime-auth-signin-tracker-backend",
         "https://github.com/konstantine25b/SnakeGame",
         # "https://github.com/langgenius/dify",
-        # "https://github.com/NirDiamant/GenAI_Agents",
-        # "https://github.com/shadps4-emu/shadPS4",
-        # "https://github.com/th-ch/youtube-music",
+        "https://github.com/NirDiamant/GenAI_Agents",
+        "https://github.com/shadps4-emu/shadPS4",
+        "https://github.com/th-ch/youtube-music",
     ]
     
      # File processing
